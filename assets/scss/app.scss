@@ -1,0 +1,27 @@
+// app.scss
+@import 'variables';
+@import '/node_modules/bootstrap/scss/bootstrap.scss';
+
+.btn-my-custom-color {
+  background-color: $my-custom-color;
+  color: #000000;
+
+  &:hover {
+    background-color: darken($my-custom-color, 10%);
+  }
+}
+
+.btn-login {
+  background-color: $login;
+  border-color: $login;
+  color: $white;
+}
+
+.container-fluid {
+  height: 100vh;
+}
+
+.btn, .text {
+  font-family: sans-serif;
+}
+
