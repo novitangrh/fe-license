@@ -114,7 +114,6 @@ export default defineComponent({
         }
 
         function applySearch() {
-            // Force the parent component to recompute filteredRows based on searchQuery
             emit('search', searchQuery.value);
         }
 

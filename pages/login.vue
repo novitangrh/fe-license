@@ -34,7 +34,7 @@ definePageMeta({
 })
 
 import { useRouter } from '#app';
-import { useAuthStore } from '@/stores/useAuthStore';
+import { useAuthStore } from '@/stores/authStore';
 import { defineComponent } from 'vue';
 
 export default defineComponent({

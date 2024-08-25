@@ -1,5 +1,5 @@
 <template>
-    <Table title="Daftar Kontak" :columns="columns" :rows="filteredRows" modalId="licenseListModal"
+    <Table title="Daftar Kontak" :columns="columns" :rows="filteredContacts" modalId="licenseListModal"
         :showSearchBar="true" :showAddButton="true" :showActionColumn="true" @search="applySearch" @addItem="addItem"
         @edit="editItem" @delete="deleteItem" />
     <Modal :title="modalTitle" :modalId="modalId" :labelId="labelId" :showModal="showModal" @save="saveItem"
@@ -9,40 +9,29 @@
                 <label for="name" class="col-form-label">Nama</label>
                 <font-awesome-icon :icon="['fas', 'asterisk']" class="asterisk-icon" />
                 <input type="text" class="form-control" id="name" placeholder="Masukkan Nama..."
-                    v-model="newLicense.name">
+                    v-model="newContact.name">
             </div>
             <div class="mb-3">
                 <label for="contact" class="col-form-label">Nomor Kontak</label>
                 <font-awesome-icon :icon="['fas', 'asterisk']" class="asterisk-icon" />
                 <input type="text" class="form-control" id="contact" placeholder="Masukkan Nomor Kontak..."
-                    v-model="newLicense.contact">
+                    v-model="newContact.contact">
             </div>
         </form>
     </Modal>
 </template>
 
 <script lang="ts">
+import { useContactStore, type Contact } from '@/stores/contactStore';
 import { computed, defineComponent, reactive, ref } from 'vue';
-
-interface License {
-    id: number;
-    name: string;
-    contact: string;
-}
 
 export default defineComponent({
     setup() {
+        const store = useContactStore();
+
         const columns = ref<string[]>(['NAMA', 'NOMOR KONTAK']);
 
-        const rows = ref<License[]>([
-            {
-                id: 1,
-                name: 'Aulia Arief',
-                contact: '081234567890'
-            }
-        ]);
-
-        const newLicense = reactive<License>({
+        const newContact = reactive<Contact>({
             id: 0,
             name: '',
             contact: ''
@@ -50,41 +39,24 @@ export default defineComponent({
 
         const isEdit = ref<boolean>(false);
         const showModal = ref<boolean>(false);
-        const modalId = "licenseListModal";
-        const labelId = "licenseListModalLabel";
-        const filterType = ref<string | null>(null);
-        const searchQuery = ref<string>('');
+        const modalId = "contactModal";
+        const labelId = "contactModalLabel";
 
-        const filteredRows = computed(() => {
-            let result = rows.value;
-
-            if (filterType.value) {
-                result = result.filter(row => row.name === filterType.value);
-            }
-
-            if (searchQuery.value) {
-                const query = searchQuery.value.toLowerCase();
-                result = result.filter(row =>
-                    Object.values(row).some(val =>
-                        typeof val === 'string' && val.toLowerCase().includes(query)
-                    )
-                );
-            }
-            // Hapus kolom id dari hasil
-            return result.map(({ id, ...rest }) => rest);
+        const filteredContacts = computed(() => {
+            return store.filteredContacts.map(({ id, ...rest }) => rest);
         });
 
         const modalTitle = computed(() => isEdit.value ? 'Edit Kontak' : 'Tambah Kontak');
 
         function editItem(index: number) {
-            Object.assign(newLicense, rows.value[index]);
+            Object.assign(newContact, store.contacts[index]);
             isEdit.value = true;
             showModal.value = true;
         }
 
         function addItem() {
-            Object.assign(newLicense, {
-                id: null,
+            Object.assign(newContact, {
+                id: 0,
                 name: '',
                 contact: ''
             });
@@ -94,18 +66,14 @@ export default defineComponent({
 
         function saveItem() {
             if (isEdit.value) {
-                const index = rows.value.findIndex(lic => lic.id === newLicense.id);
-                if (index !== -1) {
-                    rows.value[index] = { ...newLicense };
-                }
+                store.updateContact({ ...newContact });
                 isEdit.value = false;
             } else {
-                newLicense.id = rows.value.length ? Math.max(...rows.value.map(r => r.id ?? 0)) + 1 : 1;
-                rows.value.push({ ...newLicense });
+                store.addContact({ ...newContact });
             }
 
-            Object.assign(newLicense, {
-                id: null,
+            Object.assign(newContact, {
+                id: 0,
                 name: '',
                 contact: ''
             });
@@ -116,7 +84,8 @@ export default defineComponent({
         function deleteItem(index: number) {
             const confirmDelete = window.confirm("Apakah Anda yakin akan menghapus item ini?");
             if (confirmDelete) {
-                rows.value.splice(index, 1);
+                const contact = store.contacts[index];
+                store.deleteContact(contact.id);
             }
         }
 
@@ -125,25 +94,23 @@ export default defineComponent({
         }
 
         function applySearch(query: string) {
-            searchQuery.value = query;
+            store.setSearchQuery(query);
         }
 
         return {
             columns,
-            rows,
-            newLicense,
+            newContact,
             isEdit,
             showModal,
             modalId,
             labelId,
-            filteredRows,
-            modalTitle,
+            filteredContacts, modalTitle,
             editItem,
             addItem,
             saveItem,
             deleteItem,
             updateShowModal,
-            applySearch,
+            applySearch
         };
     }
 });

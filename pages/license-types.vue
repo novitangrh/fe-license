@@ -1,5 +1,5 @@
 <template>
-    <Table title="Jenis Lisensi Tersedia" :columns="columns" :rows="filteredRows" modalId="licenseListModal"
+    <Table title="Jenis Lisensi Tersedia" :columns="columns" :rows="filteredLicenses" modalId="licenseListModal"
         :showSearchBar="true" :showAddButton="true" :showActionColumn="true" @search="applySearch" @addItem="addItem"
         @edit="editItem" @delete="deleteItem" />
     <Modal :title="modalTitle" :modalId="modalId" :labelId="labelId" :showModal="showModal" @save="saveItem"
@@ -16,27 +16,14 @@
 </template>
 
 <script lang="ts">
+import { useLicenseTypesStore, type License } from '@/stores/licenseTypesStore';
 import { computed, defineComponent, reactive, ref } from 'vue';
-
-interface License {
-    id: number;
-    type: string;
-}
 
 export default defineComponent({
     setup() {
-        const columns = ref<string[]>(['NAMA']);
+        const store = useLicenseTypesStore();
 
-        const rows = ref<License[]>([
-            {
-                id: 1,
-                type: 'Domain'
-            },
-            {
-                id: 2,
-                type: 'Warranty'
-            }
-        ]);
+        const columns = ref<string[]>(['JENIS LISENSI']);
 
         const newLicense = reactive<License>({
             id: 0,
@@ -47,38 +34,22 @@ export default defineComponent({
         const showModal = ref<boolean>(false);
         const modalId = "licenseListModal";
         const labelId = "licenseListModalLabel";
-        const filterType = ref<string | null>(null);
-        const searchQuery = ref<string>('');
 
-        const filteredRows = computed(() => {
-            let result = rows.value;
-
-            if (filterType.value) {
-                result = result.filter(row => row.type === filterType.value);
-            }
-
-            if (searchQuery.value) {
-                const query = searchQuery.value.toLowerCase();
-                result = result.filter(row =>
-                    Object.values(row).some(val =>
-                        typeof val === 'string' && val.toLowerCase().includes(query)
-                    )
-                );
-            }
-            return result.map(({ id, ...rest }) => rest);
+        const filteredLicenses = computed(() => {
+            return store.filteredLicenses.map(({ id, ...rest }) => rest);
         });
 
         const modalTitle = computed(() => isEdit.value ? 'Edit Jenis Lisensi' : 'Tambah Jenis Lisensi');
 
         function editItem(index: number) {
-            Object.assign(newLicense, rows.value[index]);
+            Object.assign(newLicense, store.licenses[index]);
             isEdit.value = true;
             showModal.value = true;
         }
 
         function addItem() {
             Object.assign(newLicense, {
-                id: null,
+                id: 0,
                 type: ''
             });
             isEdit.value = false;
@@ -87,25 +58,15 @@ export default defineComponent({
 
         function saveItem() {
             if (isEdit.value) {
-                const index = rows.value.findIndex(lic => lic.id === newLicense.id);
-                if (index !== -1) {
-                    rows.value[index] = { ...newLicense };
-                }
+                store.updateLicense({ ...newLicense });
                 isEdit.value = false;
             } else {
-                newLicense.id = rows.value.length ? Math.max(...rows.value.map(r => r.id ?? 0)) + 1 : 1;
-                rows.value.push({ ...newLicense });
+                store.addLicense({ ...newLicense });
             }
 
             Object.assign(newLicense, {
-                id: null,
-                type: '',
-                name: '',
-                time: '',
-                startDate: '',
-                endDate: '',
-                provider: '',
-                amount: ''
+                id: 0,
+                type: ''
             });
 
             showModal.value = false;
@@ -114,7 +75,8 @@ export default defineComponent({
         function deleteItem(index: number) {
             const confirmDelete = window.confirm("Apakah Anda yakin akan menghapus item ini?");
             if (confirmDelete) {
-                rows.value.splice(index, 1);
+                const license = store.licenses[index];
+                store.deleteLicense(license.id);
             }
         }
 
@@ -123,18 +85,17 @@ export default defineComponent({
         }
 
         function applySearch(query: string) {
-            searchQuery.value = query;
+            store.setSearchQuery(query);
         }
 
         return {
             columns,
-            rows,
             newLicense,
             isEdit,
             showModal,
             modalId,
             labelId,
-            filteredRows,
+            filteredLicenses,
             modalTitle,
             editItem,
             addItem,

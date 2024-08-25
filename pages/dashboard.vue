@@ -1,8 +1,10 @@
 <template>
-    <Table title="Lisensi-Lisensi di YPT" :columns="columns" :rows="filteredRows" modalId="licenseListModal" :showSearchBar="false" :showFilterButton="false" :showAddButton="false" />
+    <Table title="Lisensi-Lisensi di YPT" :columns="columns" :rows="filteredRows" modalId="licenseListModal"
+        :showSearchBar="false" :showFilterButton="false" :showAddButton="false" />
 </template>
 
 <script lang="ts">
+import { useLicenseStore } from '@/stores/licenseListStore';
 import { computed, defineComponent, ref } from 'vue';
 
 interface License {
@@ -13,12 +15,14 @@ interface License {
 
 export default defineComponent({
     setup() {
+        const licenseStore = useLicenseStore();
+
         const columns = ref<string[]>(['JUMLAH LISENSI KESELURUHAN', 'JUMLAH LISENSI AKAN HABIS']);
 
-        const rows = ref<License[]>([
+        const rows = ref([
             {
                 id: 1,
-                allLicense: '100',
+                allLicense: licenseStore.totalLicenses.toString(),
                 expLicense: '20'
             }
         ]);
@@ -31,7 +35,6 @@ export default defineComponent({
             if (filterType.value) {
                 result = result.filter(row => row.allLicense === filterType.value);
             }
-            // Hapus kolom id dari hasil
             return result.map(({ id, ...rest }) => rest);
         });
 
@@ -52,7 +55,8 @@ export default defineComponent({
     margin-left: 4px;
 }
 
-.form-control, .form-select {
+.form-control,
+.form-select {
     border: 1px solid #ced4da !important;
 }
 </style>
