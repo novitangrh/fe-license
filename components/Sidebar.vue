@@ -13,7 +13,7 @@
             <nuxt-link to="/license-list" class="nav-link" exact-active-class="active-link">
                 <font-awesome-icon :icon="['fas', 'clipboard-list']" />
             </nuxt-link>
-            <nuxt-link :to="{ path: '/settings' }" class="nav-link" :class="{ 'active-link': isSettingsPage }">
+            <nuxt-link :to="{ path: '/settings/notification' }" class="nav-link" :class="{ 'active-link': isSettingsPage }">
                 <font-awesome-icon :icon="['fas', 'gear']" />
             </nuxt-link>
         </nav>

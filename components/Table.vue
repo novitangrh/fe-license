@@ -132,12 +132,12 @@ export default defineComponent({
 
         function applyFilter(type: string) {
             emit('filter', type);
-            dropdownOpen.value = false; // Close the dropdown after selecting an option
+            dropdownOpen.value = false;
         }
 
         function clearFilter() {
             emit('filter', null);
-            dropdownOpen.value = false; // Close the dropdown after clearing filter
+            dropdownOpen.value = false;
         }
 
         function handleClickOutside(event: MouseEvent) {

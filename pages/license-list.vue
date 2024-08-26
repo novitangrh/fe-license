@@ -80,7 +80,7 @@ export default defineComponent({
     setup() {
         const store = useLicenseStore();
 
-        const columns = ref<string[]>(['JENIS', 'NAMA', 'WAKTU', 'LAMA WAKTU', 'TANGGAL MULAI', 'TANGGAL SELESAI', 'PENYEDIA', 'NOMINAL']);
+        const columns = ref<string[]>(['JENIS', 'NAMA', 'WAKTU', 'DURASI', 'TANGGAL MULAI', 'TANGGAL SELESAI', 'PENYEDIA', 'NOMINAL']);
 
         const newLicense = reactive({
             id: 0,
